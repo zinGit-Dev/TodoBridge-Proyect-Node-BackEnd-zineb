@@ -1,0 +1,26 @@
+{
+  "name": "todobridge-proyect-node-backend-zineb",
+  "version": "1.0.0",
+  "description": "todo proyect",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node .",
+    "dev": "nodemon ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zinGit-Dev/TodoBridge-Proyect-Node-BackEnd-zineb.git"
+  },
+  "author": "zineb",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zinGit-Dev/TodoBridge-Proyect-Node-BackEnd-zineb/issues"
+  },
+  "homepage": "https://github.com/zinGit-Dev/TodoBridge-Proyect-Node-BackEnd-zineb#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
