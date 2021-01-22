@@ -52,37 +52,43 @@ const toNumber = (value, defaultValue) => {
 };
 router.get("/", (req, res, next) => {
     try {
-
         const filePath = path.join(__dirname, '../db/todos.json')
         const catfile = path.join(__dirname, '../db/categories.json')
-
 
         fs.readFile(filePath, (err, data) => {
             const todosData = JSON.parse(data)
             const { page, perPage } = req.query;
-
+            const num = +req.query.category
+            console.log(">este es num=>", num)
             fs.readFile(catfile, (err, data) => {
                 const todoCategory = JSON.parse(data)
                 const result = todosData.map((ele) => {
                     const category = todoCategory.find(cat => cat.id === ele.category)
                     return {
                         ...ele,
-                        category: category
+                        category: category || {}
                     }
                 })
-                console.log("esto es result data=>", result)
+                console.log(">contenido result=>", result)
+                const result2 = result.filter((ele) => {
+                    return ele.category.id === num
+                })
+                console.log("esto es result2 data=>", result2)
                 const finalPage = toNumber(page, 1)
                 const finalPerPage = toNumber(perPage, todosPerPage)
+
                 const endIndex = finalPage * finalPerPage
                 const startIndex = endIndex - finalPerPage
-                const todoSlice = result.slice(startIndex, endIndex)
-                const pages = getTodos(result, finalPerPage)
+
+                const todoSlice = result2.slice(startIndex, endIndex)
+
+                const pages = getTodos(result2, finalPerPage)
                 const nextPage = finalPage + 1 > pages ? null : finalPage + 1
 
                 res.status(200).json({
                     data: todoSlice,
                     success: true,
-                    next: `http://${req.headers.host}/todolist?page=${nextPage}&perPage=${finalPerPage}`,
+                    next: `http://${req.headers.host}/todolist?page=${nextPage}&perPage=${finalPerPage}$category=${num}`,
                 })
             })
         })
@@ -93,12 +99,7 @@ router.get("/", (req, res, next) => {
         })
     }
 })
-router.get("/get-todos-by-category",(req, res, next)=>{
-    const filePath= path.join(__dirname, "./db/todos.json")
-    const catPath = path.join(__dirname, "./db/categories.json")
-})
 
-//postman sustituye el front , de donde se supone que llegarán los datos, ahora escribiendo en body hacemos funcion de cliente
 router.post("/", (req, res, next) => {
 
     const filePath = path.join(__dirname, '../db/todos.json')
@@ -136,6 +137,33 @@ router.post("/category", (req, res, next) => {
 
     })
 })
+router.put("/:id", (req, res, next) => {
+    const filePath = path.join(__dirname, '../db/todos.json')
+    fs.readFile(filePath, (err, data) => {
+        const todosData = JSON.parse(data)
+
+        fs.writeFile(filePath, JSON.stringify(todosData), (error, data) => {
+            /*  {
+                 "id": 10,
+                 "title": "montar en bici",
+                 "category": 1,
+                 "description": "alquilar bici"
+             }, */
+            const todoById = todosData.find(todo => todo.id == req.params.id)
+            if (todoById.category === 1) {
+                todoById.category = 7
+            }
+            if (error) {
+                next(error.message)
+            }
+
+            res.status(200).json({
+                data: todoById,
+                success: true
+            })
+        })
+    })
+})
 
 router.get("/:id", (req, res, next) => {
     try {
@@ -148,22 +176,38 @@ router.get("/:id", (req, res, next) => {
                 data: todoById || 'Este todo no existe',
                 status: "ok"
             })
-            //este abajo es como lo tenía al principio y arriba como es mejor hacerlo
-            //tomar en cuenta == no hace falta transformar a Number(req.params.id)
-            // const todoFilteredById = todosData.filter((todoById) => {
+        })
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+})
 
-            //     if (todoById.id == req.params.id && todoById.id <= todosData.length) {
-            //         console.log("aqui está todsById=>", todoById)
-            //         return todoById
-            //     } else {
-            //         console.log("Sorry, this todo does not exist")
-            //     }
-            // })
+router.delete("/deleteBy/:id", (req, res, next) => {
+    try {
 
-            // res.status(200).json({
-            //     data: todoFilteredById,
-            //     status: "ok"
-            // })
+        const filePath = path.join(__dirname, "../db/todos.json")
+        fs.readFile(filePath, (err, data) => {
+            const todosData = JSON.parse(data)
+
+            const todoById = todosData.find(t => t.id == req.params.id)
+            console.log("todoById=>",  todoById)
+
+            const deleteById =  todosData.filter(obj => obj.id !== todoById.id)
+
+            console.log("deleteById=>",deleteById)
+            
+
+            fs.writeFile(filePath, JSON.stringify(deleteById), (error, data) => {
+
+                res.status(200).json({
+                    data: deleteById,
+                    success: 'ok'
+                })
+            })
+
         })
     } catch (error) {
         res.status(500).json({

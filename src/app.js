@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/todolist", todoRoute)
 
-const PORT = 3000;
+const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Listening in http://localhost:${PORT}`);
 });
